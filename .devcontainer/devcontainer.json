@@ -1,0 +1,63 @@
+{
+  "name": "Infrastructure Development",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "version": "1.8.0"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableNonRootDocker": "true"
+    },
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "version": "latest",
+      "helm": "3.14.0",
+      "minikube": "none"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  },
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-yaml",
+        "redhat.ansible",
+        "hashicorp.terraform",
+        "ms-azuretools.vscode-docker",
+        "ms-kubernetes-tools.vscode-kubernetes-tools"
+      ]
+    }
+  },
+  
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  
+  "remoteUser": "vscode",
+  
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached"
+  ],
+  
+  "forwardPorts": [3000, 8080, 9090],
+  
+  "portsAttributes": {
+    "3000": {
+      "label": "Application",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Development Server",
+      "onAutoForward": "openPreview"
+    },
+    "9090": {
+      "label": "Prometheus",
+      "onAutoForward": "notify"
+    }
+  }
+}

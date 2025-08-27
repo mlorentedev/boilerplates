@@ -1,0 +1,68 @@
+trigger:
+  - main
+  - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  containerRegistry: 'myregistry.azurecr.io'
+  imageRepository: 'myapp'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+  
+stages:
+- stage: Build
+  displayName: Build and Push
+  jobs:
+  - job: Build
+    displayName: Build job
+    steps:
+    - task: Docker@2
+      displayName: Build and push image
+      inputs:
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath)'
+        tags: |
+          $(tag)
+          latest
+
+- stage: SecurityScan
+  displayName: Security Scan
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: SecurityScan
+    displayName: Security scan job
+    steps:
+    - task: AzureContainerSecurityTask@1
+      displayName: 'Scan Docker image'
+      inputs:
+        image: '$(containerRegistry)/$(imageRepository):$(tag)'
+        failOnIssues: true
+        severityThreshold: 'HIGH'
+
+- stage: Deploy
+  displayName: Deploy to Kubernetes
+  dependsOn: SecurityScan
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy job
+    environment: 'production.default'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster
+            inputs:
+              action: 'deploy'
+              kubernetesServiceConnection: '$(kubernetesServiceConnection)'
+              namespace: 'default'
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
+              containers: '$(containerRegistry)/$(imageRepository):$(tag)'

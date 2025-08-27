@@ -1,0 +1,28 @@
+#!/bin/bash
+# Automated backup script
+set -e
+
+BACKUP_DIR="{{ backup_dir }}"
+DATE=$(date +%Y%m%d_%H%M%S)
+LOG_FILE="$BACKUP_DIR/logs/backup_$DATE.log"
+
+echo "Starting backup at $(date)" | tee -a "$LOG_FILE"
+
+# Database backups
+{% for db in databases_to_backup %}
+{% if db.type == 'postgresql' %}
+echo "Backing up PostgreSQL database: {{ db.name }}" | tee -a "$LOG_FILE"
+pg_dump -h localhost -U {{ db.user }} {{ db.name }} | gzip > "$BACKUP_DIR/databases/{{ db.name }}_$DATE.sql.gz"
+{% elif db.type == 'mysql' %}
+echo "Backing up MySQL database: {{ db.name }}" | tee -a "$LOG_FILE"
+mysqldump -u {{ db.user }} -p{{ db.password | default('') }} {{ db.name }} | gzip > "$BACKUP_DIR/databases/{{ db.name }}_$DATE.sql.gz"
+{% endif %}
+{% endfor %}
+
+# File system backups
+{% for dir in directories_to_backup %}
+echo "Backing up directory: {{ dir }}" | tee -a "$LOG_FILE"
+tar -czf "$BACKUP_DIR/files/$(basename {{ dir }})_$DATE.tar.gz" -C "$(dirname {{ dir }})" "$(basename {{ dir }})"
+{% endfor %}
+
+echo "Backup completed at $(date)" | tee -a "$LOG_FILE"

@@ -1,0 +1,52 @@
+---
+- name: Install and configure PostgreSQL
+  hosts: all
+  become: true
+  vars:
+    postgresql_version: "16"
+    postgresql_user: "postgres"
+    postgresql_password: "{{ vault_postgresql_password | default('changeme') }}"
+    
+  tasks:
+    - name: Install PostgreSQL packages
+      apt:
+        name:
+          - "postgresql-{{ postgresql_version }}"
+          - "postgresql-contrib-{{ postgresql_version }}"
+          - "postgresql-client-{{ postgresql_version }}"
+          - python3-psycopg2
+        state: present
+        update_cache: true
+
+    - name: Ensure PostgreSQL service is running and enabled
+      systemd:
+        name: postgresql
+        state: started
+        enabled: true
+
+    - name: Set PostgreSQL user password
+      become_user: postgres
+      postgresql_user:
+        name: "{{ postgresql_user }}"
+        password: "{{ postgresql_password }}"
+        state: present
+
+    - name: Configure PostgreSQL authentication
+      lineinfile:
+        path: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+        regexp: "^local   all             postgres"
+        line: "local   all             postgres                                md5"
+      notify: restart postgresql
+
+    - name: Configure PostgreSQL to listen on all addresses
+      lineinfile:
+        path: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+        regexp: "^#listen_addresses"
+        line: "listen_addresses = '*'"
+      notify: restart postgresql
+
+  handlers:
+    - name: restart postgresql
+      systemd:
+        name: postgresql
+        state: restarted

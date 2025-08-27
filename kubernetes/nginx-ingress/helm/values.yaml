@@ -1,0 +1,31 @@
+# NGINX Ingress Controller Helm Values
+controller:
+  replicaCount: 2
+  
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+  
+  config:
+    use-proxy-protocol: "true"
+    compute-full-forwarded-for: "true"
+    use-forwarded-headers: "true"
+  
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 90Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+defaultBackend:
+  enabled: true
+  replicaCount: 1

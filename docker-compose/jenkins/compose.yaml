@@ -1,0 +1,22 @@
+---
+volumes:
+  jenkins-data:
+    driver: local
+
+services:
+  jenkins:
+    image: jenkins/jenkins:2.472-lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    user: root
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

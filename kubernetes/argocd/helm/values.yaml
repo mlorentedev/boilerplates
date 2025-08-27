@@ -1,0 +1,36 @@
+# ArgoCD Helm Values
+global:
+  domain: argocd.example.com
+
+server:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - argocd.example.com
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.tls: "true"
+    tls:
+      - secretName: argocd-server-tls
+        hosts:
+          - argocd.example.com
+
+configs:
+  params:
+    server.insecure: true
+  cm:
+    url: https://argocd.example.com
+    oidc.config: |
+      name: OIDC
+      issuer: https://authentik.example.com/application/o/argocd/
+      clientId: argocd
+      clientSecret: $oidc.authentik.clientSecret
+      requestedScopes: ["openid", "profile", "email", "groups"]
+      requestedIDTokenClaims: {"groups": {"essential": true}}
+
+redis-ha:
+  enabled: false
+
+redis:
+  enabled: true

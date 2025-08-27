@@ -1,0 +1,60 @@
+---
+- name: Configure NFS server
+  hosts: all
+  become: true
+  vars:
+    nfs_exports:
+      - path: "/srv/nfs/shared"
+        clients: "192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)"
+      - path: "/srv/nfs/backups"
+        clients: "192.168.1.0/24(rw,sync,no_subtree_check,root_squash)"
+    
+  tasks:
+    - name: Install NFS server packages
+      apt:
+        name:
+          - nfs-kernel-server
+          - nfs-common
+        state: present
+        update_cache: true
+
+    - name: Create NFS export directories
+      file:
+        path: "{{ item.path }}"
+        state: directory
+        mode: '0755'
+        owner: nobody
+        group: nogroup
+      loop: "{{ nfs_exports }}"
+
+    - name: Configure NFS exports
+      lineinfile:
+        path: /etc/exports
+        line: "{{ item.path }} {{ item.clients }}"
+        create: true
+      loop: "{{ nfs_exports }}"
+      notify: export nfs
+
+    - name: Enable and start NFS services
+      systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - nfs-kernel-server
+        - rpcbind
+
+    - name: Configure firewall for NFS
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+      loop:
+        - "111"      # portmapper
+        - "2049"     # NFS
+        - "32765"    # mountd
+        - "32766"    # statd
+        - "32767"    # lockd
+
+  handlers:
+    - name: export nfs
+      command: exportfs -ra

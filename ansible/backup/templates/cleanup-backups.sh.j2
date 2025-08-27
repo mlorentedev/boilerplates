@@ -1,0 +1,23 @@
+#!/bin/bash
+# Backup cleanup script
+set -e
+
+BACKUP_DIR="{{ backup_dir }}"
+RETENTION_DAYS="{{ backup_retention_days }}"
+LOG_FILE="$BACKUP_DIR/logs/cleanup_$(date +%Y%m%d_%H%M%S).log"
+
+echo "Starting backup cleanup at $(date)" | tee -a "$LOG_FILE"
+
+# Clean up old database backups
+find "$BACKUP_DIR/databases" -name "*.sql.gz" -type f -mtime +$RETENTION_DAYS -delete
+echo "Cleaned up database backups older than $RETENTION_DAYS days" | tee -a "$LOG_FILE"
+
+# Clean up old file backups
+find "$BACKUP_DIR/files" -name "*.tar.gz" -type f -mtime +$RETENTION_DAYS -delete
+echo "Cleaned up file backups older than $RETENTION_DAYS days" | tee -a "$LOG_FILE"
+
+# Clean up old log files
+find "$BACKUP_DIR/logs" -name "*.log" -type f -mtime +$RETENTION_DAYS -delete
+echo "Cleaned up log files older than $RETENTION_DAYS days" | tee -a "$LOG_FILE"
+
+echo "Backup cleanup completed at $(date)" | tee -a "$LOG_FILE"

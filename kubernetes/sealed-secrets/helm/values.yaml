@@ -1,0 +1,22 @@
+# Sealed Secrets Controller Helm Values
+fullnameOverride: sealed-secrets-controller
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 65534
+
+serviceMonitor:
+  create: true
+  namespace: monitoring
+
+networkPolicy:
+  create: false

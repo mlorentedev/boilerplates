@@ -1,0 +1,106 @@
+---
+- name: Security hardening for Ubuntu servers
+  hosts: all
+  become: true
+  vars:
+    ssh_port: 22
+    allowed_users: ["ubuntu", "admin"]
+    disable_root_login: true
+    
+  tasks:
+    - name: Update all packages
+      apt:
+        upgrade: dist
+        update_cache: true
+
+    - name: Install security packages
+      apt:
+        name:
+          - fail2ban
+          - unattended-upgrades
+          - apt-listchanges
+          - aide
+        state: present
+
+    - name: Configure SSH security
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: true
+      loop:
+        - { regexp: "^#?PermitRootLogin", line: "PermitRootLogin {{ 'no' if disable_root_login else 'yes' }}" }
+        - { regexp: "^#?PasswordAuthentication", line: "PasswordAuthentication no" }
+        - { regexp: "^#?PubkeyAuthentication", line: "PubkeyAuthentication yes" }
+        - { regexp: "^#?Protocol", line: "Protocol 2" }
+        - { regexp: "^#?X11Forwarding", line: "X11Forwarding no" }
+        - { regexp: "^#?MaxAuthTries", line: "MaxAuthTries 3" }
+        - { regexp: "^#?ClientAliveInterval", line: "ClientAliveInterval 300" }
+        - { regexp: "^#?ClientAliveCountMax", line: "ClientAliveCountMax 2" }
+      notify: restart ssh
+
+    - name: Configure allowed users for SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        line: "AllowUsers {{ allowed_users | join(' ') }}"
+        insertafter: EOF
+      notify: restart ssh
+      when: allowed_users is defined
+
+    - name: Configure fail2ban
+      copy:
+        dest: /etc/fail2ban/jail.local
+        content: |
+          [DEFAULT]
+          bantime = 3600
+          findtime = 600
+          maxretry = 3
+          
+          [sshd]
+          enabled = true
+          port = {{ ssh_port }}
+          
+          [nginx-http-auth]
+          enabled = true
+          
+          [nginx-limit-req]
+          enabled = true
+      notify: restart fail2ban
+
+    - name: Configure automatic security updates
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+          APT::Periodic::AutocleanInterval "7";
+          APT::Periodic::Download-Upgradeable-Packages "1";
+
+    - name: Set secure kernel parameters
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: true
+      loop:
+        - { name: "net.ipv4.ip_forward", value: "0" }
+        - { name: "net.ipv4.conf.all.send_redirects", value: "0" }
+        - { name: "net.ipv4.conf.default.send_redirects", value: "0" }
+        - { name: "net.ipv4.conf.all.accept_source_route", value: "0" }
+        - { name: "net.ipv4.conf.default.accept_source_route", value: "0" }
+        - { name: "net.ipv4.conf.all.accept_redirects", value: "0" }
+        - { name: "net.ipv4.conf.default.accept_redirects", value: "0" }
+        - { name: "net.ipv4.icmp_echo_ignore_broadcasts", value: "1" }
+        - { name: "net.ipv4.icmp_ignore_bogus_error_responses", value: "1" }
+        - { name: "net.ipv4.conf.all.log_martians", value: "1" }
+
+  handlers:
+    - name: restart ssh
+      systemd:
+        name: ssh
+        state: restarted
+
+    - name: restart fail2ban
+      systemd:
+        name: fail2ban
+        state: restarted

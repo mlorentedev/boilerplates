@@ -1,0 +1,46 @@
+---
+volumes:
+  sonarqube-data:
+    driver: local
+  sonarqube-logs:
+    driver: local
+  sonarqube-extensions:
+    driver: local
+
+services:
+  sonarqube:
+    image: sonarqube:10.6.0-community
+    container_name: sonarqube
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9000/api/system/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sonarqube-postgres
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonar
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+    driver: local

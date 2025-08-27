@@ -1,0 +1,20 @@
+---
+volumes:
+  portainer-data:
+    driver: local
+
+services:
+  portainer:
+    image: portainer/portainer-ce:2.21.4
+    container_name: portainer
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://localhost:9443/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

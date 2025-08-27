@@ -1,0 +1,85 @@
+---
+- name: Configure automated backup system
+  hosts: all
+  become: true
+  vars:
+    backup_user: "backup"
+    backup_dir: "/opt/backups"
+    backup_retention_days: "30"
+    backup_schedule: "0 2 * * *"  # Daily at 2 AM
+    databases_to_backup:
+      - name: "app_db"
+        type: "postgresql"
+        user: "postgres"
+    directories_to_backup:
+      - "/etc"
+      - "/home"
+      - "/var/www"
+    
+  tasks:
+    - name: Install backup dependencies
+      apt:
+        name:
+          - rsync
+          - postgresql-client
+          - mysql-client
+          - tar
+          - gzip
+        state: present
+        update_cache: true
+
+    - name: Create backup user
+      user:
+        name: "{{ backup_user }}"
+        system: true
+        shell: /bin/bash
+        home: "{{ backup_dir }}"
+        createhome: true
+
+    - name: Create backup directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: '0750'
+      loop:
+        - "{{ backup_dir }}"
+        - "{{ backup_dir }}/databases"
+        - "{{ backup_dir }}/files"
+        - "{{ backup_dir }}/logs"
+
+    - name: Create backup script
+      template:
+        src: backup.sh.j2
+        dest: "{{ backup_dir }}/backup.sh"
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: '0750'
+
+    - name: Create backup cleanup script
+      template:
+        src: cleanup-backups.sh.j2
+        dest: "{{ backup_dir }}/cleanup-backups.sh"
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: '0750'
+
+    - name: Set up backup cron job
+      cron:
+        name: "Automated backup"
+        minute: "{{ backup_schedule.split()[0] }}"
+        hour: "{{ backup_schedule.split()[1] }}"
+        day: "{{ backup_schedule.split()[2] }}"
+        month: "{{ backup_schedule.split()[3] }}"
+        weekday: "{{ backup_schedule.split()[4] }}"
+        job: "{{ backup_dir }}/backup.sh >> {{ backup_dir }}/logs/backup.log 2>&1"
+        user: "{{ backup_user }}"
+
+    - name: Set up cleanup cron job
+      cron:
+        name: "Backup cleanup"
+        minute: "30"
+        hour: "3"
+        job: "{{ backup_dir }}/cleanup-backups.sh >> {{ backup_dir }}/logs/cleanup.log 2>&1"
+        user: "{{ backup_user }}"

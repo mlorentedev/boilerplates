@@ -1,0 +1,48 @@
+# Velero Helm Values
+configuration:
+  backupStorageLocation:
+    - name: default
+      provider: aws
+      bucket: my-backup-bucket
+      config:
+        region: us-west-2
+        s3ForcePathStyle: "true"
+        s3Url: https://s3.example.com
+  
+  volumeSnapshotLocation:
+    - name: default
+      provider: aws
+      config:
+        region: us-west-2
+
+credentials:
+  useSecret: true
+  secretContents:
+    cloud: |
+      [default]
+      aws_access_key_id=YOUR_ACCESS_KEY
+      aws_secret_access_key=YOUR_SECRET_KEY
+
+deployRestic: true
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+schedules:
+  daily:
+    disabled: false
+    schedule: "0 1 * * *"
+    template:
+      ttl: "720h"
+      includedNamespaces:
+      - "*"

@@ -1,0 +1,51 @@
+---
+- name: Configure UFW firewall
+  hosts: all
+  become: true
+  vars:
+    ufw_rules:
+      - { port: "22", rule: "allow", comment: "SSH" }
+      - { port: "80", rule: "allow", comment: "HTTP" }
+      - { port: "443", rule: "allow", comment: "HTTPS" }
+    ufw_logging: "on"
+    ufw_default_incoming: "deny"
+    ufw_default_outgoing: "allow"
+    
+  tasks:
+    - name: Install UFW
+      apt:
+        name: ufw
+        state: present
+        update_cache: true
+
+    - name: Set UFW default policies
+      ufw:
+        direction: "{{ item.direction }}"
+        policy: "{{ item.policy }}"
+      loop:
+        - { direction: "incoming", policy: "{{ ufw_default_incoming }}" }
+        - { direction: "outgoing", policy: "{{ ufw_default_outgoing }}" }
+
+    - name: Configure UFW rules
+      ufw:
+        rule: "{{ item.rule }}"
+        port: "{{ item.port }}"
+        comment: "{{ item.comment }}"
+      loop: "{{ ufw_rules }}"
+
+    - name: Enable UFW logging
+      ufw:
+        logging: "{{ ufw_logging }}"
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    - name: Check UFW status
+      command: ufw status verbose
+      register: ufw_status
+      changed_when: false
+
+    - name: Display UFW status
+      debug:
+        var: ufw_status.stdout_lines

@@ -1,0 +1,57 @@
+---
+- name: Configure SSL certificates with Certbot
+  hosts: all
+  become: true
+  vars:
+    certbot_email: "admin@example.com"
+    certbot_domains:
+      - "example.com"
+      - "www.example.com"
+    certbot_webroot_path: "/var/www/html"
+    
+  tasks:
+    - name: Install Certbot and dependencies
+      apt:
+        name:
+          - certbot
+          - python3-certbot-nginx
+          - python3-certbot-apache
+        state: present
+        update_cache: true
+
+    - name: Create webroot directory
+      file:
+        path: "{{ certbot_webroot_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Check if certificates already exist
+      stat:
+        path: "/etc/letsencrypt/live/{{ certbot_domains[0] }}/fullchain.pem"
+      register: cert_exists
+
+    - name: Obtain SSL certificates
+      command: >
+        certbot certonly --webroot
+        --webroot-path {{ certbot_webroot_path }}
+        --email {{ certbot_email }}
+        --agree-tos --no-eff-email
+        -d {{ certbot_domains | join(' -d ') }}
+      when: not cert_exists.stat.exists
+
+    - name: Set up certificate renewal cron job
+      cron:
+        name: "Certbot renewal"
+        minute: "0"
+        hour: "12"
+        job: "/usr/bin/certbot renew --quiet"
+        user: root
+
+    - name: Test certificate renewal
+      command: certbot renew --dry-run
+      changed_when: false
+      register: renewal_test
+
+    - name: Display renewal test results
+      debug:
+        var: renewal_test.stdout_lines
