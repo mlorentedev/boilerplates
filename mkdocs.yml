@@ -86,14 +86,6 @@ plugins:
 
   - tags
 
-  - minify:
-      minify_html: true
-      minify_js: true
-      minify_css: true
-      htmlmin_opts:
-        remove_comments: true
-      cache_safe: true
-
   - awesome-pages  # Automatic navigation from .pages files
 
   - git-revision-date-localized:
@@ -206,80 +198,25 @@ nav:
 
   - Terraform:
     - Overview: terraform/index.md
-    - AWS: terraform/aws.md
-    - Azure: terraform/azure.md
-    - DigitalOcean: terraform/digitalocean.md
-    - Proxmox: terraform/proxmox.md
-    - Kubernetes: terraform/kubernetes.md
-    - Helm: terraform/helm.md
-    - Cheatsheet: terraform/cheatsheet.md
 
   - Kubernetes:
     - Overview: kubernetes/index.md
-    - ArgoCD: kubernetes/argocd.md
-    - Cert Manager: kubernetes/cert-manager.md
-    - Nginx Ingress: kubernetes/nginx-ingress.md
-    - Prometheus: kubernetes/prometheus-operator.md
-    - Sealed Secrets: kubernetes/sealed-secrets.md
-    - External Secrets: kubernetes/external-secrets.md
-    - Traefik: kubernetes/traefik.md
-    - Longhorn: kubernetes/longhorn.md
-    - Velero: kubernetes/velero.md
-    - Authentik: kubernetes/authentik.md
-    - Cheatsheet: kubernetes/cheatsheet.md
 
   - Docker Compose:
     - Overview: docker-compose/index.md
-    - Databases: docker-compose/databases.md
-    - Monitoring: docker-compose/monitoring.md
-    - CI/CD: docker-compose/cicd.md
-    - Networking: docker-compose/networking.md
-    - Cheatsheet: docker-compose/cheatsheet.md
 
   - Ansible:
     - Overview: ansible/index.md
-    - Docker: ansible/docker.md
-    - Ubuntu: ansible/ubuntu.md
-    - Kubernetes: ansible/kubernetes.md
-    - Monitoring: ansible/monitoring.md
-    - Security: ansible/security.md
-    - Storage: ansible/storage.md
-    - Database: ansible/database.md
-    - Networking: ansible/networking.md
-    - Cheatsheet: ansible/cheatsheet.md
 
   - GitHub Actions:
     - Overview: github-actions/index.md
-    - Azure DevOps: github-actions/azure-devops.md
-    - GitLab CI: github-actions/gitlab-ci.md
-    - CircleCI: github-actions/circleci.md
-    - SSH/SCP: github-actions/ssh-scp.md
-    - Kubectl: github-actions/kubectl.md
-    - Cheatsheet: github-actions/cheatsheet.md
 
   - Microservices:
     - Overview: microservices/index.md
-    - Spring Boot: microservices/spring-boot.md
-    - Quarkus: microservices/quarkus.md
-    - Docker: microservices/docker.md
-    - Kubernetes: microservices/kubernetes.md
-
-  - Snippets:
-    - Overview: snippets/index.md
-    - Docker: snippets/docker.md
-    - Kubernetes: snippets/kubernetes.md
-    - Terraform: snippets/terraform.md
-    - Ansible: snippets/ansible.md
-    - Git: snippets/git.md
-    - Bash: snippets/bash.md
 
   - Cheatsheets:
-    - Overview: cheatsheets/index.md
     - Docker: cheatsheets/docker.md
     - Kubernetes: cheatsheets/kubernetes.md
-    - Terraform: cheatsheets/terraform.md
-    - Ansible: cheatsheets/ansible.md
-    - Git: cheatsheets/git.md
 
   - Tags: tags.md
   - About: about.md
