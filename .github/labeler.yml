@@ -1,0 +1,35 @@
+documentation:
+  - 'docs/**/*'
+  - '*.md'
+  - 'mkdocs.yml'
+
+cli:
+  - 'cli/**/*'
+
+terraform:
+  - 'terraform/**/*'
+
+kubernetes:
+  - 'kubernetes/**/*'
+
+docker:
+  - 'docker-compose/**/*'
+  - '**/Dockerfile'
+  - '**/compose.yaml'
+
+ansible:
+  - 'ansible/**/*'
+
+github-actions:
+  - '.github/**/*'
+  - 'github-actions/**/*'
+
+dependencies:
+  - 'requirements.txt'
+  - 'package.json'
+
+scripts:
+  - 'scripts/**/*'
+
+snippets:
+  - 'snippets/**/*'

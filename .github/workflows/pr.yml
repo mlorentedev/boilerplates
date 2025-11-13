@@ -1,0 +1,88 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-validation:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check PR title
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          if [[ ! "$PR_TITLE" =~ ^(feat|fix|docs|style|refactor|test|chore|perf):.+ ]]; then
+            echo "PR title must follow conventional commits format"
+            echo "Examples: feat: add new feature, fix: resolve bug, docs: update readme"
+            exit 1
+          fi
+
+      - name: Check for large files
+        run: |
+          MAX_SIZE=1048576  # 1MB in bytes
+          large_files=$(find . -type f -size +${MAX_SIZE}c -not -path "./.git/*" -not -path "./site/*" -not -path "./.cache/*")
+
+          if [ -n "$large_files" ]; then
+            echo "Large files detected (>1MB):"
+            echo "$large_files"
+            echo "Consider using Git LFS for large files"
+            exit 1
+          fi
+
+      - name: Check for sensitive files
+        run: |
+          sensitive_patterns=(
+            "*.pem"
+            "*.key"
+            "*.p12"
+            "*.pfx"
+            ".env"
+            "*.env"
+            "credentials.json"
+            "secrets.yaml"
+          )
+
+          for pattern in "${sensitive_patterns[@]}"; do
+            files=$(find . -name "$pattern" -not -path "./.git/*" -not -path "./site/*")
+            if [ -n "$files" ]; then
+              echo "Potentially sensitive files detected:"
+              echo "$files"
+              echo "Please remove sensitive files before merging"
+              exit 1
+            fi
+          done
+
+  label-pr:
+    name: Label PR
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add labels based on files changed
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  size-label:
+    name: Add Size Label
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add size label
+        uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: 'size/xs'
+          xs_max_size: 10
+          s_label: 'size/s'
+          s_max_size: 100
+          m_label: 'size/m'
+          m_max_size: 500
+          l_label: 'size/l'
+          l_max_size: 1000
+          xl_label: 'size/xl'

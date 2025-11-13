@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build search index
+        run: |
+          python3 -c "from cli.utils.search import build_search_index; build_search_index()"
+
+      - name: Create release package
+        run: |
+          mkdir -p release
+          cp -r cli release/
+          cp -r docs release/
+          cp -r snippets release/
+          cp -r scripts release/
+          cp mkdocs.yml release/
+          cp requirements.txt release/
+          cp Makefile release/
+          cp README.md release/
+          cp LICENSE release/
+          cd release
+          tar -czf ../boilerplates-${{ github.ref_name }}.tar.gz .
+          cd ..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            boilerplates-${{ github.ref_name }}.tar.gz
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
