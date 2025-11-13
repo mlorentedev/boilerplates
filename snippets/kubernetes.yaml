@@ -1,0 +1,15 @@
+snippets:
+- category: kubernetes
+  content: "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{app_name}}\n\
+    \  labels:\n    app: {{app_name}}\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n\
+    \      app: {{app_name}}\n  template:\n    metadata:\n      labels:\n        app:\
+    \ {{app_name}}\n    spec:\n      containers:\n      - name: {{app_name}}\n   \
+    \     image: {{image_name}}:{{image_tag}}\n        ports:\n        - containerPort:\
+    \ 8080\n        resources:\n          requests:\n            memory: \"256Mi\"\
+    \n            cpu: \"250m\"\n          limits:\n            memory: \"512Mi\"\n\
+    \            cpu: \"500m\"\n"
+  description: Basic Kubernetes Deployment
+  name: kubernetes-deployment
+  tags:
+  - kubernetes
+  - deployment

@@ -108,6 +108,17 @@ k8s-validate: ## Validate Kubernetes manifests
 		kubectl --dry-run=client apply -f "$$file" || exit 1; \
 	done
 
+# bp CLI targets
+install-cli: ## Install bp CLI tool
+	@echo "Installing bp CLI..."
+	@bash scripts/install-bp.sh
+
+bp-test: ## Test bp CLI functionality
+	@echo "Testing bp CLI..."
+	@./cli/bp --version
+	@./cli/bp list | head -5
+	@echo "CLI is working"
+
 # Documentation targets
 docs: ## Generate documentation
 	@echo "Generating documentation..."
@@ -118,8 +129,94 @@ docs: ## Generate documentation
 		fi; \
 	done
 
+docs-build: ## Build MkDocs documentation
+	@echo "Building documentation..."
+	mkdocs build
+
+docs-serve: ## Serve documentation locally
+	@echo "Starting documentation server..."
+	@echo "Documentation will be available at http://localhost:8000"
+	mkdocs serve
+
+docs-deploy: ## Deploy documentation to GitHub Pages
+	@echo "Deploying documentation..."
+	mkdocs gh-deploy --force
+
+docs-validate: ## Validate documentation links
+	@echo "Validating documentation..."
+	@find docs/ -name "*.md" -type f | while read file; do \
+		echo "Checking $$file"; \
+		grep -oP '\[.*?\]\(\K[^)]+' "$$file" | while read link; do \
+			if [[ $$link == http* ]]; then \
+				curl -s -o /dev/null -w "%{http_code} $$link\n" "$$link" | grep -v "^200" && echo "Broken: $$link in $$file" || true; \
+			fi; \
+		done; \
+	done
+
+# Search index targets
+search-index: ## Build search index
+	@echo "Building search index..."
+	@python3 -c "from cli.utils.search import build_search_index; build_search_index()"
+
+search-test: ## Test search performance
+	@echo "Testing search performance..."
+	@python3 cli/utils/search.py
+
+# Snippet targets
+snippets-create: ## Create initial snippet database
+	@echo "Creating snippet database..."
+	@python3 -c "from cli.utils.snippets import create_snippet_database; create_snippet_database()"
+
+snippets-list: ## List all snippets
+	@echo "Available snippets:"
+	@python3 -c "from cli.utils.snippets import list_snippets; import json; print(json.dumps(list_snippets(), indent=2))"
+
+# Testing targets
+test-all: test docs-validate search-test ## Run all tests including documentation and search
+
+test-cli: ## Test CLI commands
+	@echo "Testing CLI commands..."
+	@./cli/bp --version
+	@./cli/bp list terraform
+	@./cli/bp cache stats
+	@echo "All CLI tests passed"
+
+# Performance targets
+benchmark: ## Run performance benchmarks
+	@echo "Running performance benchmarks..."
+	@echo "Search performance:"
+	@python3 cli/utils/search.py
+	@echo ""
+	@echo "Cache statistics:"
+	@./cli/bp cache stats
+
+# Development targets
+dev-setup: setup ## Complete development setup
+	@echo "Installing Python dependencies..."
+	pip3 install --user -r requirements.txt
+	@echo "Installing CLI..."
+	@make install-cli
+	@echo "Building search index..."
+	@make search-index
+	@echo "Creating snippets..."
+	@make snippets-create
+	@echo "Development environment ready"
+
+# Clean targets
+clean-all: clean ## Clean everything including cache and docs
+	@echo "Cleaning all generated files..."
+	rm -rf site/
+	rm -rf .cache/
+	rm -rf ~/.cache/bp/
+	find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+	find . -name "*.pyc" -delete
+
 # Release targets
 release: ## Create a new release
 	@echo "Creating release..."
 	@echo "Current version: $$(git describe --tags --abbrev=0 2>/dev/null || echo 'No tags found')"
 	@echo "Please create a new tag manually: git tag -a v1.0.0 -m 'Release v1.0.0'"
+
+# Validate everything
+validate: lint test-all docs-validate ## Validate everything
+	@echo "All validation passed"

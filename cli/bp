@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+"""
+bp - Boilerplates CLI Tool
+Fast searchable documentation and template generation system
+"""
+
+import sys
+import os
+
+# Add the CLI directory to Python path
+CLI_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, CLI_DIR)
+
+from commands import cli
+
+if __name__ == '__main__':
+    try:
+        cli.main()
+    except KeyboardInterrupt:
+        print("\n\nInterrupted by user")
+        sys.exit(130)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)

@@ -1,0 +1,252 @@
+/* Custom styles for boilerplates documentation */
+
+:root {
+  --bp-primary: #3f51b5;
+  --bp-accent: #ff4081;
+  --bp-code-bg: #f5f5f5;
+}
+
+/* Grid cards styling */
+.grid.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.grid.cards > * {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.grid.cards > *:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Code block enhancements */
+.highlight {
+  position: relative;
+}
+
+.highlight button[class*="copybtn"] {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.highlight:hover button[class*="copybtn"] {
+  opacity: 1;
+}
+
+/* Search enhancements */
+.md-search__input {
+  font-size: 1rem;
+}
+
+.md-search__input::placeholder {
+  color: var(--md-default-fg-color--light);
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+table thead {
+  background-color: var(--md-default-fg-color--lightest);
+}
+
+table th, table td {
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* Admonition styling */
+.admonition {
+  margin: 1.5rem 0;
+  padding: 0 0.75rem;
+  border-left: 0.25rem solid;
+  border-radius: 0.25rem;
+}
+
+.admonition.tip {
+  border-color: #00bfa5;
+}
+
+.admonition.warning {
+  border-color: #ff9100;
+}
+
+.admonition.danger {
+  border-color: #ff5252;
+}
+
+/* Command styling */
+code.command {
+  background-color: var(--bp-code-bg);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+/* Keyboard key styling */
+kbd {
+  background-color: var(--md-default-fg-color--lightest);
+  border: 1px solid var(--md-default-fg-color--light);
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.85em;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Tag styling */
+.tag {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  margin: 0.2rem;
+  background-color: var(--md-accent-fg-color--transparent);
+  color: var(--md-accent-fg-color);
+  border-radius: 1rem;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+/* Snippet preview */
+.snippet-preview {
+  background-color: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.snippet-preview .snippet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.snippet-preview .snippet-title {
+  font-weight: 600;
+  color: var(--md-primary-fg-color);
+}
+
+.snippet-preview .snippet-copy {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.snippet-preview .snippet-copy:hover {
+  opacity: 1;
+}
+
+/* Quick reference cards */
+.quick-ref-card {
+  background: linear-gradient(135deg, var(--md-primary-fg-color), var(--md-accent-fg-color));
+  color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.quick-ref-card h3 {
+  margin-top: 0;
+  color: white;
+}
+
+/* Command list */
+.command-list {
+  list-style: none;
+  padding: 0;
+}
+
+.command-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.command-list li:last-child {
+  border-bottom: none;
+}
+
+.command-list code {
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .grid.cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] {
+  --bp-code-bg: #2d2d2d;
+}
+
+[data-md-color-scheme="slate"] .grid.cards > * {
+  border-color: var(--md-default-bg-color--light);
+}
+
+[data-md-color-scheme="slate"] table th,
+[data-md-color-scheme="slate"] table td {
+  border-color: var(--md-default-bg-color--light);
+}
+
+/* Loading animation */
+@keyframes loading {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.loading {
+  animation: loading 1.5s infinite;
+}
+
+/* Search result highlighting */
+.search-result-highlight {
+  background-color: rgba(255, 235, 59, 0.3);
+  padding: 0 0.2rem;
+  border-radius: 0.2rem;
+}
+
+/* Performance indicator */
+.performance-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 0.25rem;
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.performance-badge.fast {
+  background-color: #4caf50;
+}
+
+.performance-badge.medium {
+  background-color: #ff9800;
+}
+
+.performance-badge.slow {
+  background-color: #f44336;
+}

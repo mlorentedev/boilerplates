@@ -1,0 +1,44 @@
+snippets:
+- category: docker
+  content: "version: '3.8'\nservices:\n  postgres:\n    image: postgres:15-alpine\n\
+    \    environment:\n      POSTGRES_DB: {{database_name}}\n      POSTGRES_USER:\
+    \ {{database_user}}\n      POSTGRES_PASSWORD: {{database_password}}\n    ports:\n\
+    \      - \"5432:5432\"\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n\
+    \nvolumes:\n  postgres_data:\n"
+  description: PostgreSQL with Docker Compose
+  name: docker-compose-postgres
+  tags:
+  - docker
+  - postgres
+  - database
+- category: docker
+  content: 'FROM maven:3.9-eclipse-temurin-17 AS build
+
+    WORKDIR /app
+
+    COPY pom.xml .
+
+    RUN mvn dependency:go-offline
+
+    COPY src ./src
+
+    RUN mvn package -DskipTests
+
+
+    FROM eclipse-temurin:17-jre-alpine
+
+    WORKDIR /app
+
+    COPY --from=build /app/target/*.jar app.jar
+
+    EXPOSE 8080
+
+    ENTRYPOINT ["java", "-jar", "app.jar"]
+
+    '
+  description: Multi-stage Dockerfile for Java applications
+  name: dockerfile-java
+  tags:
+  - docker
+  - java
+  - dockerfile
