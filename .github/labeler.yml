@@ -1,35 +1,49 @@
 documentation:
-  - 'docs/**/*'
-  - '*.md'
-  - 'mkdocs.yml'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**/*'
+      - '*.md'
+      - 'mkdocs.yml'
 
 cli:
-  - 'cli/**/*'
+  - changed-files:
+    - any-glob-to-any-file: 'cli/**/*'
 
 terraform:
-  - 'terraform/**/*'
+  - changed-files:
+    - any-glob-to-any-file: 'terraform/**/*'
 
 kubernetes:
-  - 'kubernetes/**/*'
+  - changed-files:
+    - any-glob-to-any-file: 'kubernetes/**/*'
 
 docker:
-  - 'docker-compose/**/*'
-  - '**/Dockerfile'
-  - '**/compose.yaml'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docker-compose/**/*'
+      - '**/Dockerfile'
+      - '**/compose.yaml'
 
 ansible:
-  - 'ansible/**/*'
+  - changed-files:
+    - any-glob-to-any-file: 'ansible/**/*'
 
 github-actions:
-  - '.github/**/*'
-  - 'github-actions/**/*'
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/**/*'
+      - 'github-actions/**/*'
 
 dependencies:
-  - 'requirements.txt'
-  - 'package.json'
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'requirements.txt'
+      - 'package.json'
 
 scripts:
-  - 'scripts/**/*'
+  - changed-files:
+    - any-glob-to-any-file: 'scripts/**/*'
 
 snippets:
-  - 'snippets/**/*'
+  - changed-files:
+    - any-glob-to-any-file: 'snippets/**/*'
