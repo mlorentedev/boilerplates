@@ -84,8 +84,7 @@ plugins:
         - stopWordFilter
         - trimmer
 
-  - tags:
-      tags_file: tags.md
+  - tags
 
   - minify:
       minify_html: true
